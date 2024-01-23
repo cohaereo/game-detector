@@ -1,5 +1,4 @@
 use log::error;
-use std::fmt::{Display, Formatter};
 
 #[cfg(feature = "epic_games")]
 pub mod epic_games;
@@ -12,11 +11,11 @@ pub mod steam;
 #[derive(Debug)]
 pub enum InstalledGame {
     #[cfg(feature = "steam")]
-    Steam(steam::AppState),
+    Steam(Box<steam::AppState>),
     #[cfg(feature = "epic_games")]
-    EpicGames(epic_games::Manifest),
+    EpicGames(Box<epic_games::Manifest>),
     #[cfg(feature = "ms_store")]
-    MicrosoftStore(ms_store::GamePackage),
+    MicrosoftStore(Box<ms_store::GamePackage>),
 }
 
 impl InstalledGame {
@@ -38,7 +37,7 @@ pub fn find_all_games() -> Vec<InstalledGame> {
                 games.extend(
                     packages
                         .into_iter()
-                        .map(|p| InstalledGame::MicrosoftStore(p)),
+                        .map(|p| InstalledGame::MicrosoftStore(Box::new(p))),
                 );
             }
             Err(e) => {
@@ -51,7 +50,7 @@ pub fn find_all_games() -> Vec<InstalledGame> {
     {
         match steam::get_all_apps() {
             Ok(apps) => {
-                games.extend(apps.into_iter().map(|a| InstalledGame::Steam(a)));
+                games.extend(apps.into_iter().map(|a| InstalledGame::Steam(Box::new(a))));
             }
             Err(e) => {
                 error!("Failed to read Steam apps: {e}");
@@ -63,7 +62,11 @@ pub fn find_all_games() -> Vec<InstalledGame> {
     {
         match epic_games::get_all_manifests() {
             Ok(manifests) => {
-                games.extend(manifests.into_iter().map(|m| InstalledGame::EpicGames(m)));
+                games.extend(
+                    manifests
+                        .into_iter()
+                        .map(|m| InstalledGame::EpicGames(Box::new(m))),
+                );
             }
             Err(e) => {
                 error!("Failed to read Epic Games manifests: {e}");

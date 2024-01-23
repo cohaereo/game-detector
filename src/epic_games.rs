@@ -2,7 +2,6 @@ use fs_err::File;
 use log::error;
 use serde::Deserialize;
 use serde_json::Value;
-use std::io::Error;
 
 const MANIFESTS_GLOB: &str = "C:\\ProgramData\\Epic\\EpicGamesLauncher\\Data\\Manifests\\*.item";
 
@@ -76,17 +75,15 @@ pub struct Manifest {
 
 pub fn get_all_manifests() -> anyhow::Result<Vec<Manifest>> {
     let mut manifests = vec![];
-    for r in glob::glob(MANIFESTS_GLOB)? {
-        if let Ok(path) = r {
-            match File::open(path) {
-                Ok(f) => match serde_json::from_reader::<_, Manifest>(f) {
-                    Ok(m) => {
-                        manifests.push(m);
-                    }
-                    Err(e) => error!("Failed to parse manifest: {e}"),
-                },
-                Err(e) => error!("Failed to open manifest file: {e}"),
-            }
+    for path in glob::glob(MANIFESTS_GLOB)?.flatten() {
+        match File::open(path) {
+            Ok(f) => match serde_json::from_reader::<_, Manifest>(f) {
+                Ok(m) => {
+                    manifests.push(m);
+                }
+                Err(e) => error!("Failed to parse manifest: {e}"),
+            },
+            Err(e) => error!("Failed to open manifest file: {e}"),
         }
     }
 

@@ -1,5 +1,5 @@
 use anyhow::Context;
-use log::{warn};
+use log::warn;
 use std::path::Path;
 use winreg::enums::HKEY_LOCAL_MACHINE;
 
@@ -48,31 +48,29 @@ pub fn get_game_packages() -> anyhow::Result<Vec<GamePackage>> {
     let package_repo = hklm.open_subkey(GAMING_SERVICES_PACKAGE_REPOSITORY)?;
 
     let mut packages = vec![];
-    for k in package_repo.enum_values() {
-        if let Ok((app_id, _)) = k {
-            let pkg_path = Path::new(FULL_PACKAGE_REPOSITORY).join(&app_id);
-            let pkg = hklm.open_subkey(pkg_path)?;
-            match pkg.get_value::<String, _>("Path") {
-                Ok(path) => match parse_app_id(&app_id) {
-                    Ok(o) => {
-                        let [app_publisher, app_name, app_version, app_arch, app_publisher_id] = o;
-                        packages.push(GamePackage {
-                            app_id,
-                            app_publisher,
-                            app_name,
-                            app_version,
-                            app_arch,
-                            app_publisher_id,
-                            path,
-                        })
-                    }
-                    Err(e) => {
-                        eprintln!("Couldn't parse package id '{app_id}': {e}");
-                    }
-                },
-                Err(e) => {
-                    warn!("Couldn't read path key for package '{app_id}': {e}");
+    for (app_id, _) in package_repo.enum_values().flatten() {
+        let pkg_path = Path::new(FULL_PACKAGE_REPOSITORY).join(&app_id);
+        let pkg = hklm.open_subkey(pkg_path)?;
+        match pkg.get_value::<String, _>("Path") {
+            Ok(path) => match parse_app_id(&app_id) {
+                Ok(o) => {
+                    let [app_publisher, app_name, app_version, app_arch, app_publisher_id] = o;
+                    packages.push(GamePackage {
+                        app_id,
+                        app_publisher,
+                        app_name,
+                        app_version,
+                        app_arch,
+                        app_publisher_id,
+                        path,
+                    })
                 }
+                Err(e) => {
+                    eprintln!("Couldn't parse package id '{app_id}': {e}");
+                }
+            },
+            Err(e) => {
+                warn!("Couldn't read path key for package '{app_id}': {e}");
             }
         }
     }

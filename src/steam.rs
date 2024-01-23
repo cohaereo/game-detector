@@ -74,11 +74,9 @@ pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
     let folders: LibraryFolders = keyvalues_serde::from_reader(File::open(LIBRARY_FOLDERS_VDF)?)?;
     for f in folders.0.values() {
         let steamapps_path = Path::new(&f.path).join("steamapps");
-        for (&app_id, _) in &f.apps {
+        for &app_id in f.apps.keys() {
             let appmanifest_path = steamapps_path.join(format!("appmanifest_{app_id}.acf"));
-            match File::open(&appmanifest_path)
-                .map(|f| keyvalues_serde::from_reader::<_, AppState>(f))
-            {
+            match File::open(&appmanifest_path).map(keyvalues_serde::from_reader::<_, AppState>) {
                 Ok(a) => match a {
                     Ok(mut a) => {
                         a.library_path = f.path.clone();
@@ -206,7 +204,7 @@ mod tests {
         assert_eq!(app_state.BytesStaged, Some(0));
         assert_eq!(app_state.TargetBuildID, Some(13032868));
         assert_eq!(app_state.AutoUpdateBehavior, 0);
-        assert_eq!(app_state.AllowOtherDownloadsWhileRunning, false);
+        assert!(!app_state.AllowOtherDownloadsWhileRunning);
         assert_eq!(app_state.ScheduledAutoUpdate, 1706853353);
 
         assert_eq!(app_state.InstalledDepots.len(), 5);
