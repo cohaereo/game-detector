@@ -1,0 +1,33 @@
+[package]
+name = "game-detector"
+version = "0.1.0"
+edition = "2021"
+authors = ["cohaereo <cohaereo@protonmail.com>"]
+description = "Detects installed games on various platforms (Steam, Microsoft Store, Epic Games)."
+homepage = "https://github.com/cohaereo/game-detector"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/cohaereo/game-detector"
+categories = ["games", "parsing"]
+keywords = ["game", "detection", "steam", "epic_games", "microsoft"]
+include = ["**/*.rs", "Cargo.toml"]
+
+[dependencies]
+anyhow = "1.0.79"
+fs-err = "2.11.0"
+glob = "0.3.1"
+log = "0.4.20"
+
+keyvalues-serde = { version = "0.2.1", optional = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", optional = true }
+winreg = {  version = "0.52", optional = true }
+
+[features]
+default = ["steam", "epic_games", "ms_store"]
+steam = ["dep:keyvalues-serde"]
+epic_games = ["dep:serde_json"]
+ms_store = ["dep:winreg"]
+
+[dev-dependencies]
+env_logger = "0.11.0"
