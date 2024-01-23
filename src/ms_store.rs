@@ -1,7 +1,6 @@
 use anyhow::Context;
 use log::warn;
 use std::path::Path;
-use winreg::enums::HKEY_LOCAL_MACHINE;
 
 const GAMING_SERVICES_PACKAGE_REPOSITORY: &str =
     "SOFTWARE\\Microsoft\\GamingServices\\PackageRepository\\Package";
@@ -43,8 +42,14 @@ fn parse_app_id(s: &str) -> anyhow::Result<[String; 5]> {
     ])
 }
 
+#[cfg(not(windows))]
 pub fn get_game_packages() -> anyhow::Result<Vec<GamePackage>> {
-    let hklm = winreg::RegKey::predef(HKEY_LOCAL_MACHINE);
+    anyhow::bail!("Not supported on this platform")
+}
+
+#[cfg(windows)]
+pub fn get_game_packages() -> anyhow::Result<Vec<GamePackage>> {
+    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
     let package_repo = hklm.open_subkey(GAMING_SERVICES_PACKAGE_REPOSITORY)?;
 
     let mut packages = vec![];
