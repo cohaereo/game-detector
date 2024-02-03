@@ -1,6 +1,6 @@
 [package]
 name = "game-detector"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["cohaereo <cohaereo@protonmail.com>"]
 description = "Detects installed games on various platforms (Steam, Microsoft Store, Epic Games)."

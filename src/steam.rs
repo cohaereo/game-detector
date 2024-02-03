@@ -24,7 +24,7 @@ pub struct LibraryFolder {
 #[allow(non_snake_case)]
 pub struct AppState {
     pub appid: u64,
-    pub universe: u64,
+    // pub universe: u64,
     pub LauncherPath: Option<String>,
     pub name: String,
     pub StateFlags: u64,
@@ -66,7 +66,6 @@ pub struct InstalledDepot {
 // pub struct AppConfig {
 //     pub language: String,
 // }
-
 
 #[cfg(not(windows))]
 pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
@@ -196,7 +195,7 @@ mod tests {
             keyvalues_serde::from_str(MANIFEST_DATA).expect("Failed to parse app manifest data");
 
         assert_eq!(app_state.appid, 70);
-        assert_eq!(app_state.universe, 1);
+        // assert_eq!(app_state.universe, 1);
         assert_eq!(
             app_state.LauncherPath,
             Some("C:\\Program Files (x86)\\Steam\\steam.exe".to_string())
