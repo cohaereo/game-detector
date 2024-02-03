@@ -67,11 +67,24 @@ pub struct InstalledDepot {
 //     pub language: String,
 // }
 
-const LIBRARY_FOLDERS_VDF: &str = "C:\\Program Files (x86)\\Steam\\config\\libraryfolders.vdf";
 
+#[cfg(not(windows))]
 pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
+    anyhow::bail!("Not supported on this platform")
+}
+
+const STEAM_REGKEY_PATH: &str = "SOFTWARE\\Valve\\Steam";
+
+#[cfg(windows)]
+pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
+    let hkcu = winreg::RegKey::predef(winreg::enums::HKEY_CURRENT_USER);
+    let steam_key = hkcu.open_subkey(STEAM_REGKEY_PATH)?;
+    let steam_path: String = steam_key.get_value("SteamPath")?;
+    println!("{}", steam_path);
+    let vdf_path = Path::new(&steam_path).join("config\\libraryfolders.vdf");
+
     let mut apps = vec![];
-    let folders: LibraryFolders = keyvalues_serde::from_reader(File::open(LIBRARY_FOLDERS_VDF)?)?;
+    let folders: LibraryFolders = keyvalues_serde::from_reader(File::open(vdf_path)?)?;
     for f in folders.0.values() {
         let steamapps_path = Path::new(&f.path).join("steamapps");
         for &app_id in f.apps.keys() {
