@@ -12,7 +12,7 @@ pub struct LibraryFolders(pub HashMap<usize, LibraryFolder>);
 pub struct LibraryFolder {
     pub path: String,
     pub label: String,
-    pub contentid: u64,
+    pub contentid: i64,
     pub totalsize: usize,
     pub update_clean_bytes_tally: usize,
     pub time_last_update_corruption: u64,
