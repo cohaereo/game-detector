@@ -80,7 +80,6 @@ pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
     let hkcu = winreg::RegKey::predef(winreg::enums::HKEY_CURRENT_USER);
     let steam_key = hkcu.open_subkey(STEAM_REGKEY_PATH)?;
     let steam_path: String = steam_key.get_value("SteamPath")?;
-    println!("{}", steam_path);
     let vdf_path = Path::new(&steam_path).join("config\\libraryfolders.vdf");
 
     let mut apps = vec![];
