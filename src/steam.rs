@@ -75,10 +75,27 @@ pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
 const STEAM_REGKEY_PATH: &str = "SOFTWARE\\Valve\\Steam";
 
 #[cfg(windows)]
-pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
-    let hkcu = winreg::RegKey::predef(winreg::enums::HKEY_CURRENT_USER);
+fn get_steam_path(root: winreg::HKEY) -> anyhow::Result<String> {
+    use winreg::enums::*;
+    use winreg::RegKey;
+
+    let hkcu = winreg::RegKey::predef(root);
     let steam_key = hkcu.open_subkey(STEAM_REGKEY_PATH)?;
-    let steam_path: String = steam_key.get_value("SteamPath")?;
+    let path: String = steam_key.get_value("SteamPath")?;
+    Ok(path)
+}
+
+#[cfg(windows)]
+pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
+    use anyhow::Context;
+    use log::debug;
+
+    let steam_path = get_steam_path(winreg::enums::HKEY_CURRENT_USER)
+        .or_else(|_| get_steam_path(winreg::enums::HKEY_LOCAL_MACHINE))
+        .context("Failed to get steam path")?;
+
+    debug!("Detected Steam path: {steam_path}");
+
     let vdf_path = Path::new(&steam_path).join("config\\libraryfolders.vdf");
 
     let mut apps = vec![];
