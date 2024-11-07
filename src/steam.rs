@@ -14,8 +14,8 @@ pub struct LibraryFolder {
     pub label: String,
     pub contentid: i64,
     pub totalsize: usize,
-    pub update_clean_bytes_tally: usize,
-    pub time_last_update_corruption: u64,
+    pub update_clean_bytes_tally: Option<usize>,
+    pub time_last_update_corruption: Option<u64>,
     pub apps: HashMap<u32, usize>,
 }
 
@@ -31,18 +31,18 @@ pub struct AppState {
     pub installdir: String,
     pub LastUpdated: u64,
     pub SizeOnDisk: usize,
-    pub StagingSize: usize,
+    pub StagingSize: Option<usize>,
     pub buildid: u64,
-    pub LastOwner: u64,
+    pub LastOwner: Option<u64>,
     pub UpdateResult: Option<u64>,
     pub BytesToDownload: Option<usize>,
     pub BytesDownloaded: Option<usize>,
     pub BytesToStage: Option<usize>,
     pub BytesStaged: Option<usize>,
     pub TargetBuildID: Option<usize>,
-    pub AutoUpdateBehavior: u64,
-    pub AllowOtherDownloadsWhileRunning: bool,
-    pub ScheduledAutoUpdate: u64,
+    pub AutoUpdateBehavior: Option<u64>,
+    // pub AllowOtherDownloadsWhileRunning: bool,
+    pub ScheduledAutoUpdate: Option<u64>,
     pub InstalledDepots: HashMap<u64, InstalledDepot>,
     pub SharedDepots: Option<HashMap<u64, u64>>,
     // pub UserConfig: AppConfig,
@@ -222,18 +222,18 @@ mod tests {
         assert_eq!(app_state.installdir, "Half-Life");
         assert_eq!(app_state.LastUpdated, 1703587250);
         assert_eq!(app_state.SizeOnDisk, 589449723);
-        assert_eq!(app_state.StagingSize, 0);
+        assert_eq!(app_state.StagingSize, Some(0));
         assert_eq!(app_state.buildid, 13032868);
-        assert_eq!(app_state.LastOwner, 76561198166639473);
+        assert_eq!(app_state.LastOwner, Some(76561198166639473));
         assert_eq!(app_state.UpdateResult, Some(0));
         assert_eq!(app_state.BytesToDownload, Some(42478352));
         assert_eq!(app_state.BytesDownloaded, Some(0));
         assert_eq!(app_state.BytesToStage, Some(127625842));
         assert_eq!(app_state.BytesStaged, Some(0));
         assert_eq!(app_state.TargetBuildID, Some(13032868));
-        assert_eq!(app_state.AutoUpdateBehavior, 0);
-        assert!(!app_state.AllowOtherDownloadsWhileRunning);
-        assert_eq!(app_state.ScheduledAutoUpdate, 1706853353);
+        assert_eq!(app_state.AutoUpdateBehavior, Some(0));
+        // assert!(!app_state.AllowOtherDownloadsWhileRunning);
+        assert_eq!(app_state.ScheduledAutoUpdate, Some(1706853353));
 
         assert_eq!(app_state.InstalledDepots.len(), 5);
         // assert_eq!(app_state.UserConfig.language, "english");
