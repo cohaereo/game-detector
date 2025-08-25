@@ -21,8 +21,11 @@ pub enum InstalledGame {
 impl InstalledGame {
     pub fn store_name(&self) -> &str {
         match self {
+            #[cfg(feature = "steam")]
             InstalledGame::Steam(_) => "Steam",
+            #[cfg(feature = "epic_games")]
             InstalledGame::EpicGames(_) => "Epic Games",
+            #[cfg(feature = "ms_store")]
             InstalledGame::MicrosoftStore(_) => "Microsoft Store",
         }
     }

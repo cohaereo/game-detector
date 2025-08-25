@@ -27,7 +27,7 @@ winreg = { version = "0.52", optional = true }
 
 [features]
 default = ["steam", "epic_games", "ms_store"]
-steam = ["dep:keyvalues-serde"]
+steam = ["dep:keyvalues-serde", "dep:winreg"]
 epic_games = ["dep:serde_json"]
 ms_store = ["dep:winreg"]
 

@@ -76,9 +76,6 @@ const STEAM_REGKEY_PATH: &str = "SOFTWARE\\Valve\\Steam";
 
 #[cfg(windows)]
 fn get_steam_path(root: winreg::HKEY) -> anyhow::Result<String> {
-    use winreg::enums::*;
-    use winreg::RegKey;
-
     let hkcu = winreg::RegKey::predef(root);
     let steam_key = hkcu.open_subkey(STEAM_REGKEY_PATH)?;
     let path: String = steam_key.get_value("SteamPath")?;
