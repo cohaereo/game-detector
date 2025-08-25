@@ -50,7 +50,10 @@ pub fn get_game_packages() -> anyhow::Result<Vec<GamePackage>> {
 #[cfg(windows)]
 pub fn get_game_packages() -> anyhow::Result<Vec<GamePackage>> {
     let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
-    let package_repo = hklm.open_subkey(GAMING_SERVICES_PACKAGE_REPOSITORY)?;
+    let Ok(package_repo) = hklm.open_subkey(GAMING_SERVICES_PACKAGE_REPOSITORY) else {
+        // User has no gaming services/packages installed, therefore no games
+        return Ok(vec![]);
+    };
 
     let mut packages = vec![];
     for (app_id, _) in package_repo.enum_values().flatten() {
