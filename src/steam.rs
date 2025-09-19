@@ -67,15 +67,27 @@ pub struct InstalledDepot {
 //     pub language: String,
 // }
 
-#[cfg(not(windows))]
-pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
+#[cfg(not(any(windows, unix)))]
+fn get_steam_path() -> anyhow::Result<String> {
     anyhow::bail!("Not supported on this platform")
 }
 
-const STEAM_REGKEY_PATH: &str = "SOFTWARE\\Valve\\Steam";
+#[cfg(unix)]
+fn get_steam_path() -> anyhow::Result<String> {
+    use anyhow::Context;
+
+    let home = std::env::var("HOME").context("HOME environment variable not set")?;
+    Ok(Path::new(&home)
+        .join(Path::new(".steam/steam"))
+        .to_str()
+        .unwrap()
+        .to_string())
+}
 
 #[cfg(windows)]
-fn get_steam_path(root: winreg::HKEY) -> anyhow::Result<String> {
+fn get_steam_path_reg(root: winreg::HKEY) -> anyhow::Result<String> {
+    const STEAM_REGKEY_PATH: &str = "SOFTWARE\\Valve\\Steam";
+
     let hkcu = winreg::RegKey::predef(root);
     let steam_key = hkcu.open_subkey(STEAM_REGKEY_PATH)?;
     let path: String = steam_key.get_value("SteamPath")?;
@@ -83,17 +95,20 @@ fn get_steam_path(root: winreg::HKEY) -> anyhow::Result<String> {
 }
 
 #[cfg(windows)]
+fn get_steam_path() -> anyhow::Result<String> {
+    get_steam_path(winreg::enums::HKEY_CURRENT_USER)
+        .or_else(|_| get_steam_path(winreg::enums::HKEY_LOCAL_MACHINE))
+}
+
 pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
     use anyhow::Context;
     use log::debug;
 
-    let steam_path = get_steam_path(winreg::enums::HKEY_CURRENT_USER)
-        .or_else(|_| get_steam_path(winreg::enums::HKEY_LOCAL_MACHINE))
-        .context("Failed to get steam path")?;
+    let steam_path = get_steam_path().context("Failed to find Steam installation path")?;
 
-    debug!("Detected Steam path: {steam_path}");
+    debug!("Using Steam path: {steam_path}");
 
-    let vdf_path = Path::new(&steam_path).join("config\\libraryfolders.vdf");
+    let vdf_path = Path::new(&steam_path).join("config/libraryfolders.vdf");
 
     let mut apps = vec![];
     let folders: LibraryFolders = keyvalues_serde::from_reader(File::open(vdf_path)?)?;
