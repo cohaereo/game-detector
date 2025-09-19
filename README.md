@@ -14,6 +14,6 @@ This crate detects installed games on your system on a per-store basis.
 | GOG Galaxy      | ❌      | 〰    | 〰  |
 | Microsoft Store | ✅      | 〰    | 〰  |
 | Origin          | ❌      | 〰    | ❌  |
-| Steam           | ✅      | ❌    | ❌  |
+| Steam           | ✅      | ✅    | (untested)  |
 
 Feel free to contribute unsupported/new stores/platforms

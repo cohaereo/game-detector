@@ -1,12 +1,3 @@
-use anyhow::Context;
-use log::warn;
-use std::path::Path;
-
-const GAMING_SERVICES_PACKAGE_REPOSITORY: &str =
-    "SOFTWARE\\Microsoft\\GamingServices\\PackageRepository\\Package";
-const FULL_PACKAGE_REPOSITORY: &str =
-    "SOFTWARE\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppModel\\PackageRepository\\Packages";
-
 #[derive(Debug, Clone)]
 pub struct GamePackage {
     pub app_id: String,
@@ -22,7 +13,9 @@ pub struct GamePackage {
 
 /// Returns [publisher, name, version, arch, publisher id]
 /// eg. ["Bungie", "Destiny2PCbasegame", "0.3.26071.0", "x64", "8xb1a0vv8ay84"]
+#[cfg(windows)]
 fn parse_app_id(s: &str) -> anyhow::Result<[String; 5]> {
+    use anyhow::Context;
     let mut parts = s.split('_');
     let publisher_and_name = parts.next().context("Invalid app id (publisher+name)")?;
     let mut pan_parts = publisher_and_name.split('.');
@@ -49,6 +42,14 @@ pub fn get_game_packages() -> anyhow::Result<Vec<GamePackage>> {
 
 #[cfg(windows)]
 pub fn get_game_packages() -> anyhow::Result<Vec<GamePackage>> {
+    use log::warn;
+    use std::path::Path;
+
+    const GAMING_SERVICES_PACKAGE_REPOSITORY: &str =
+        "SOFTWARE\\Microsoft\\GamingServices\\PackageRepository\\Package";
+    const FULL_PACKAGE_REPOSITORY: &str =
+        "SOFTWARE\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppModel\\PackageRepository\\Packages";
+
     let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
     let Ok(package_repo) = hklm.open_subkey(GAMING_SERVICES_PACKAGE_REPOSITORY) else {
         // User has no gaming services/packages installed, therefore no games

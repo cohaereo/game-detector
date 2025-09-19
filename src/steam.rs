@@ -232,7 +232,7 @@ mod tests {
         assert_eq!(app_state.name, "Half-Life");
         assert_eq!(app_state.StateFlags, 6);
         assert_eq!(app_state.installdir, "Half-Life");
-        assert_eq!(app_state.LastUpdated, 1703587250);
+        assert_eq!(app_state.LastUpdated, Some(1703587250));
         assert_eq!(app_state.SizeOnDisk, 589449723);
         assert_eq!(app_state.StagingSize, Some(0));
         assert_eq!(app_state.buildid, 13032868);
