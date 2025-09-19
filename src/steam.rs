@@ -29,7 +29,7 @@ pub struct AppState {
     pub name: String,
     pub StateFlags: u64,
     pub installdir: String,
-    pub LastUpdated: u64,
+    pub LastUpdated: Option<u64>,
     pub SizeOnDisk: usize,
     pub StagingSize: Option<usize>,
     pub buildid: u64,
