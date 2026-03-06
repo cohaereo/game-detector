@@ -3,6 +3,10 @@ use log::{error, warn};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::Path;
+#[cfg(unix)]
+use std::path::PathBuf;
+#[cfg(windows)]
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename = "libraryfolders")]
@@ -73,15 +77,11 @@ fn get_steam_path() -> anyhow::Result<String> {
 }
 
 #[cfg(unix)]
-fn get_steam_path() -> anyhow::Result<String> {
+fn get_steam_path() -> anyhow::Result<PathBuf> {
     use anyhow::Context;
 
     let home = std::env::var("HOME").context("HOME environment variable not set")?;
-    Ok(Path::new(&home)
-        .join(Path::new(".steam/steam"))
-        .to_str()
-        .unwrap()
-        .to_string())
+    Ok(Path::new(&home).join(Path::new(".steam/steam")))
 }
 
 #[cfg(windows)]
@@ -95,9 +95,25 @@ fn get_steam_path_reg(root: winreg::HKEY) -> anyhow::Result<String> {
 }
 
 #[cfg(windows)]
-fn get_steam_path() -> anyhow::Result<String> {
-    get_steam_path(winreg::enums::HKEY_CURRENT_USER)
-        .or_else(|_| get_steam_path(winreg::enums::HKEY_LOCAL_MACHINE))
+fn get_steam_path() -> anyhow::Result<PathBuf> {
+    use anyhow::Context;
+    use log::info;
+
+    let is_wine = std::fs::read_to_string("/proc/version")
+        .unwrap_or_default()
+        .contains("Linux");
+
+    if is_wine {
+        info!("Detected Wine, looking for Linux Steam directory instead");
+        let username = std::env::var("USERNAME").context("%USERNAME% is not set")?;
+
+        let home = format!("/home/{username}");
+        Ok(Path::new(&home).join(".steam/steam/"))
+    } else {
+        get_steam_path_reg(winreg::enums::HKEY_CURRENT_USER)
+            .or_else(|_| get_steam_path_reg(winreg::enums::HKEY_LOCAL_MACHINE))
+            .map(|p| Path::new(&p).into())
+    }
 }
 
 pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
@@ -106,7 +122,7 @@ pub fn get_all_apps() -> anyhow::Result<Vec<AppState>> {
 
     let steam_path = get_steam_path().context("Failed to find Steam installation path")?;
 
-    debug!("Using Steam path: {steam_path}");
+    debug!("Using Steam path: {}", steam_path.display());
 
     let vdf_path = Path::new(&steam_path).join("config/libraryfolders.vdf");
 
