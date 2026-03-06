@@ -37,7 +37,7 @@ fn parse_app_id(s: &str) -> anyhow::Result<[String; 5]> {
 
 #[cfg(not(windows))]
 pub fn get_game_packages() -> anyhow::Result<Vec<GamePackage>> {
-    anyhow::bail!("Not supported on this platform")
+    Ok(vec![])
 }
 
 #[cfg(windows)]
