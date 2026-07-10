@@ -6,7 +6,7 @@ use serde_json::Value;
 const MANIFESTS_GLOB: &str = "C:\\ProgramData\\Epic\\EpicGamesLauncher\\Data\\Manifests\\*.item";
 
 #[derive(Default, Debug, Clone, PartialEq, Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename_all = "PascalCase", default)]
 pub struct Manifest {
     pub format_version: i64,
     #[serde(rename = "bIsIncompleteInstall")]
